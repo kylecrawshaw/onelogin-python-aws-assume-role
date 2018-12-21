@@ -82,6 +82,16 @@ def get_options():
     parser.add_argument("--aws-role-name",
                         dest="aws_role_name",
                         help="AWS role name to select")
+    parser.add_argument("--include-aws-session-expiration",
+                        dest="include_aws_session_expiration",
+                        default=False,
+                        action='store_true',
+                        help="Includes the aws_session_expiration|AWS_SESSION_EXPIRATION values in the AWS credentials")
+    parser.add_argument("--include-aws-security-token",
+                        dest="include_aws_security_token",
+                        default=False,
+                        action='store_true',
+                        help="Includes the aws_security_token|AWS_SECURITY_TOKEN values in the AWS credentials")
 
     options = parser.parse_args()
 
@@ -546,8 +556,10 @@ def main():
             print("%s AWS_SESSION_TOKEN=%s\n" % (action, session_token))
             print("%s AWS_ACCESS_KEY_ID=%s\n" % (action, access_key_id))
             print("%s AWS_SECRET_ACCESS_KEY=%s\n" % (action, secret_access_key))
-            print("%s AWS_SESSION_EXPIRATION=%s\n" % (action, session_expiration))
-            print("%s AWS_SECURITY_TOKEN=%s\n" % (action, security_token))
+            if options.include_aws_session_expiration:
+                print("%s AWS_SESSION_EXPIRATION=%s\n" % (action, session_expiration))
+            if options.include_aws_security_token:
+                print("%s AWS_SECURITY_TOKEN=%s\n" % (action, security_token))
         else:
             if options.file is None:
                 options.file = os.path.expanduser('~/.aws/credentials')
@@ -563,9 +575,11 @@ def main():
                 'aws_access_key_id': access_key_id,
                 'aws_secret_access_key': secret_access_key,
                 'aws_session_token': session_token,
-                'aws_session_expiration': session_expiration,
-                'aws_security_token': security_token
             }
+            if options.include_aws_session_expiration:
+                updated_config['aws_session_expiration'] = session_expiration
+            if options.include_aws_security_token:
+                updated_config['aws_security_token'] = security_token
             config_file_writer.update_config(updated_config, options.file)
 
             print("Success!\n")
